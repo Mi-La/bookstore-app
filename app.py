@@ -1,6 +1,7 @@
 import sys
 import os
 import pandas as pd
+from pathlib import Path
 from io import StringIO
 from PyQt6.QtWidgets import (
     QApplication,
@@ -57,8 +58,16 @@ class FilePicker(QWidget):
         return self._path_edit.text()
 
 
+def resource_path(relative_path: str) -> Path:
+    if getattr(sys, "frozen", False):
+        base_path = Path(sys._MEIPASS)
+    else:
+        base_path = Path(__file__).resolve().parent
+    return base_path / relative_path
+
+
 def readOrdersXML(filename):
-    orders = pd.read_xml(filename, stylesheet="data/orders.xsl").dropna(axis=1, how="all")
+    orders = pd.read_xml(filename, stylesheet=resource_path("data/orders.xsl")).dropna(axis=1, how="all")
     orders_cust = orders[orders["code"] == "cust"]
     orders_no_code = orders[orders["code"].isnull()].copy()
     orders_no_code["code"] = "no-code"
