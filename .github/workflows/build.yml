@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, '*-ci' ]
   workflow_dispatch:
 
 jobs:
@@ -20,15 +20,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Activate venv
+      - name: Pyinstaller
         run: |
           python3 -m venv python3 venv
           . venv/bin/activate
           pip install -r requirements.txt
-
-      - name: Pyinstaller
-        run: |
           pyinstaller upasku.spec
+
+      - name: Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: upasku-linux64
+          path: dist/upasku
 
   win:
     runs-on: windows-latest
@@ -52,10 +55,13 @@ jobs:
     - name: Activate venv
       shell: bash
       run: |
-        python3 -m virtualenv python3 venv
-        venv/Scripts/activate.sh
+        python3 -m virtualenv -p python3 venv
+        . venv/Scripts/activate
         pip install -r requirements.txt
-
-    - name: Pyinstaller
-      run: |
         pyinstaller upasku.spec
+
+    - name: Release
+      uses: actions/upload-artifact@v4
+      with:
+        name: upasku-win64
+        path: dist/upasku.exe
